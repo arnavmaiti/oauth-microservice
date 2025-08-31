@@ -11,6 +11,7 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 ## :sparkles: What's New
 
 ### Version 1.0.0 (Latest)
+---
 You can read the full list of changes [here]().
 
 #### :rocket: New Features
@@ -22,7 +23,5 @@ Nothing on first release
 ## Getting Started
 
 ### Build and Run With Docker
-```
-docker build -t oauth-microservice:latest .
-docker run -p 8080:8080 oauth-microservice:latest
-```
+* `docker build -t oauth-microservice:latest .`
+* `docker run -p 8080:8080 oauth-microservice:latest`
