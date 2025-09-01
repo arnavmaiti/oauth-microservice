@@ -16,6 +16,8 @@ postgres:
   db: authdb
   port: 5432
   storageSize: 5Gi
-  postgres:
+
+migrations:
+  enabled: false   # Set to false to skip running DB migrations
 
 resources: {}

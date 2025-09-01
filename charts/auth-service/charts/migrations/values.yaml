@@ -1,0 +1,7 @@
+postgres:
+  host: postgres
+  port: 5432
+  db: authdb
+  username: authuser
+  passwordSecret: postgres-secret
+  passwordKey: POSTGRES_PASSWORD

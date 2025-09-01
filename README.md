@@ -36,4 +36,6 @@ You can read the full list of changes [here](https://github.com/arnavmaiti/oauth
 * To start the server at http://localhost:8080: `kubectl port-forward svc/auth-service 8080:8080`
 > * View health API at `GET http://localhost:8080/health`
 * For further updates: `helm upgrade --install auth-service ./charts/auth-service`
+* For updates with migrations: `helm upgrade --install auth-service ./charts/auth-service --set migrations.enabled=true` or `helm upgrade --install migrations ./charts/auth-service/charts/migrations`
+* Access PostGRES database using: `kubectl exec -it <postgres_pod_name> -- psql -U authuser -d authdb`
 
