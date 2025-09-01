@@ -32,7 +32,8 @@ You can read the full list of changes [here](https://github.com/arnavmaiti/oauth
 
 ### Helm Chart
 * For first install: `helm install auth-service ./charts/auth-service`
-* `kubectl get pods`
-* `kubectl port-forward svc/auth-service 8080:8080`
+* To check the pods: `kubectl get pods`
+* To start the server at http://localhost:8080: `kubectl port-forward svc/auth-service 8080:8080`
+> * View health API at `GET http://localhost:8080/health`
 * For further updates: `helm upgrade --install auth-service ./charts/auth-service`
 
