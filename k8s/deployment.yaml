@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth-microservice
+  template:
+    metadata:
+      labels:
+        app: oauth-microservice
+    spec:
+      containers:
+      - name: oauth-microservice
+        image: oauth-microservice:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          value: "postgres://postgres:password@postgres:5432/authdb?sslmode=disable"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth-microservice
+spec:
+  type: ClusterIP
+  selector:
+    app: oauth-microservice
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080

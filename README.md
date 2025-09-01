@@ -29,3 +29,10 @@ You can read the full list of changes [here]().
 ### Build and Run With Docker
 * `docker build -t oauth-microservice:latest .`
 * `docker run -p 8080:8080 oauth-microservice:latest`
+
+### Helm Chart
+* For first install: `helm install auth-service ./charts/auth-service`
+* `kubectl get pods`
+* `kubectl port-forward svc/auth-service 8080:8080`
+* For further updates: `helm upgrade --install auth-service ./charts/auth-service`
+
