@@ -1,5 +1,7 @@
 # OAuth Microservice
-![GitHub go.mod Go version (branch)](https://img.shields.io/github/go-mod/go-version/arnavmaiti/oauth-microservice/v1.0.0)
+![GitHub go.mod Go version (branch)](https://img.shields.io/github/go-mod/go-version/arnavmaiti/oauth-microservice)
+![GitHub Release](https://img.shields.io/github/v/release/arnavmaiti/oauth-microservice)
+
 
 ## Table of Contents
 * [Introduction](#bulb-introduction)
