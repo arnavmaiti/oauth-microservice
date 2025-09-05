@@ -18,7 +18,15 @@ postgres:
   port: 5432
   storageSize: 5Gi
 
+ingress:
+  enabled: true
+  host: auth.local
+  className: nginx
+  tls:
+    enabled: false
+    secretName: ""
+
 migrations:
-  enabled: false   # Set to false to skip running DB migrations
+  enabled: false            # Set to false to skip running DB migrations
 
 resources: {}

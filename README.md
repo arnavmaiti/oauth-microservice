@@ -47,3 +47,20 @@ OAuth server running on :8080
 * For updates with migrations: `helm upgrade --install auth-service ./charts/auth-service --set migrations.enabled=true` or `helm upgrade --install migrations ./charts/auth-service/charts/migrations`
 * Access PostGRES database using: `kubectl exec -it <postgres_pod_name> -- psql -U authuser -d authdb`
 
+### (Optional) Ingress on local
+* Install ingress-nginx
+```
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm uninstall ingress-nginx -n ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --set controller.admissionWebhooks.enabled=false
+```
+* Setup hosts file with the following line `127.0.0.1 auth.local`
+* Upgrade helm
+* Health and readiness APIs should be available
+```
+https://auth.local/health
+https://auth.local/ready
+```
+
+
