@@ -14,6 +14,7 @@ postgres:
   username: authuser
   password: changeme123
   db: authdb
+  host: postgres
   port: 5432
   storageSize: 5Gi
 

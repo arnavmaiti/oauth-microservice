@@ -27,13 +27,21 @@ You can read the full list of changes [here](https://github.com/arnavmaiti/oauth
 ## :wrench: Getting Started
 
 ### Build and Run With Docker
-* `docker build -t oauth-microservice:latest .`
-* `docker run -p 8080:8080 oauth-microservice:latest`
+* We will need to establish a network for service and a sample PostGRES to work together
+* `docker network create mynet`
+* Run PostGRES sample container `docker run -d --name pg --network mynet -e POSTGRES_PASSWORD=changeme123 postgres:15`
+* Build latest docker `docker build -t oauth-microservice:latest .`
+* Run the container `docker run --network mynet -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme123 -e POSTGRES_HOST=pg -e POSTGRES_PORT=5432 -e POSTGRES_DB=postgres -p 8080:8080 oauth-microservice:latest`
+* You should see 
+```
+OAuth server running on :8080
+2025/09/05 15:32:41 Successfully connected to database
+```
 
 ### Helm Chart
 * For first install: `helm install auth-service ./charts/auth-service`
 * To check the pods: `kubectl get pods`
-* To start the server at http://localhost:8080: `kubectl port-forward svc/auth-service 8080:8080`
+* To start the server at http://localhost:8080: `kubectl port-forward svc/oauth-microservice 8080:8080`
 > * View health API at `GET http://localhost:8080/health`
 * For further updates: `helm upgrade --install auth-service ./charts/auth-service`
 * For updates with migrations: `helm upgrade --install auth-service ./charts/auth-service --set migrations.enabled=true` or `helm upgrade --install migrations ./charts/auth-service/charts/migrations`
