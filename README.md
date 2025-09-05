@@ -19,7 +19,10 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 You can read the full list of changes [here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0).
 
 #### :rocket: New Features
-* TODO
+* PostGRES database
+* Schema migration support
+* Helm, kubernetes and docker based auth-service backend
+* Ingress controller for development setup
 
 #### :bug: Bug Fixes
 * Nothing here
