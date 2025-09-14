@@ -1,26 +1,19 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/arnavmaiti/oauth-microservice/internal/db"
 )
 
 type HealthResponse struct {
 	Status string `json:"status"`
 }
 
-type HealthContext struct {
-	db *sql.DB
-}
-
-func (context *HealthContext) SetDatabase(db *sql.DB) {
-	context.db = db
-}
-
 // Health check endpoint
-func (context *HealthContext) HealthCheck(w http.ResponseWriter, r *http.Request) {
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 	resp := HealthResponse{Status: "OK"}
 
@@ -29,7 +22,10 @@ func (context *HealthContext) HealthCheck(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(resp)
 }
 
-func (context *HealthContext) ReadyCheck(w http.ResponseWriter, r *http.Request) {
+func ReadyCheck(w http.ResponseWriter, r *http.Request) {
+
+	dbConn := db.GetDB()
+
 	var exists bool
 	query := `
 		SELECT EXISTS (
@@ -39,7 +35,7 @@ func (context *HealthContext) ReadyCheck(w http.ResponseWriter, r *http.Request)
 		);
 	`
 
-	if err := context.db.QueryRow(query).Scan(&exists); err != nil {
+	if err := dbConn.QueryRow(query).Scan(&exists); err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		fmt.Fprintf(w, "Error checking schema: %v\n", err)
 		return

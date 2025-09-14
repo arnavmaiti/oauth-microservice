@@ -34,6 +34,7 @@ You can read the full list of changes [here](https://github.com/arnavmaiti/oauth
 * Run PostGRES sample container `docker run -d --name pg --network mynet -e POSTGRES_PASSWORD=changeme123 postgres:15`
 * Build latest docker `docker build -t oauth-microservice:latest .`
 * Run the container `docker run --network mynet -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme123 -e POSTGRES_HOST=pg -e POSTGRES_PORT=5432 -e POSTGRES_DB=postgres -p 8080:8080 oauth-microservice:latest`
+* Please note, in order to get the latest local pod in helm, use `kubectl delete pod <oauth-microservice-pod>`
 * You should see 
 ```
 OAuth server running on :8080
