@@ -11,6 +11,8 @@
 
 ## :bulb: Introduction
 Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed to run as microservices on Kubernetes
+## :rocket: Release Notes
+[Read the release notes here](https://github.com/arnavmaiti/oauth-microservice/wiki/Release-Notes)
 
 ## :package: Built With
 * [Go](https://go.dev/)
