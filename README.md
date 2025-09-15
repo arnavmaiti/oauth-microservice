@@ -9,12 +9,6 @@
 * [What's New](#sparkles-whats-new)
 * [Getting Started](#wrench-getting-started)
 
-## :bulb: Introduction
-Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed to run as microservices on Kubernetes
-## :rocket: Release Notes
-* [v1.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0)
-* [v2.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0)
-
 ## :package: Built With
 * [Go](https://go.dev/)
 
@@ -36,6 +30,12 @@ Endpoint           | Method | Purpose
 
 #### :bug: Bug Fixes
 * Nothing here
+
+## :bulb: Introduction
+Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed to run as microservices on Kubernetes
+## :rocket: Release Notes
+* [v1.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0)
+* [v2.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0)
 
 ## :wrench: Getting Started
 
