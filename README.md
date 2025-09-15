@@ -34,8 +34,8 @@ Endpoint           | Method | Purpose
 ## :bulb: Introduction
 Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed to run as microservices on Kubernetes
 ## :rocket: Release Notes
-* [v1.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0)
 * [v2.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0)
+* [v1.0.0](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0)
 
 ## :wrench: Getting Started
 
