@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,8 +10,6 @@ import (
 	"github.com/arnavmaiti/oauth-microservice/internal/handlers"
 )
 
-var db *sql.DB
-
 func main() {
 
 	mux := http.NewServeMux()
@@ -21,6 +18,9 @@ func main() {
 	mux.HandleFunc("/health", handlers.HealthCheck)
 	mux.HandleFunc("/ready", handlers.ReadyCheck)
 	mux.HandleFunc("/register", handlers.RegisterHandler)
+	mux.HandleFunc("/authorize", handlers.AuthorizeHandler)
+	mux.HandleFunc("/token", handlers.TokenHandler)
+	mux.HandleFunc("/introspect", handlers.IntrospectHandler)
 
 	port := ":8080"
 	fmt.Printf("OAuth server running on %s\n", port)

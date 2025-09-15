@@ -66,4 +66,22 @@ https://auth.local/health
 https://auth.local/ready
 ```
 
+### (Temporary till client register is implemented) How to create a client in PostGRES
+* Get the PostGRES pod by `kubectl get pods`
+* Execute bash command `kubectl exec -it <postgres-0> -- bash`
+* Run psql command line `psql -U authuser -d authdb`
+* Run the following SQL command to create a temporary client
+```
+INSERT INTO oauth_clients (id, client_id, client_secret, redirect_uris, scopes, created_at, updated_at)
+VALUES (
+    gen_random_uuid(),
+    'client123',
+    'secret123',
+    ARRAY['http://localhost:8080/callback'],
+    ARRAY['openid'],
+    NOW(),
+    NOW()
+);
+```
+
 
