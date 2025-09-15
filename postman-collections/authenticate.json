@@ -1,0 +1,159 @@
+{
+  "info": {
+    "name": "OAuth2 Auth Service Automated",
+    "_postman_id": "c1a2b3d4-5678-9101-1121-314151617181",
+    "description": "Postman collection for Phase 2 OAuth2 server with automated variable capture",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"arnav\",\n  \"email\": \"arnav@example.com\",\n  \"password\": \"StrongPass123\"\n}"
+        },
+        "url": {"raw": "http://localhost:8080/register","protocol":"http","host":["localhost"],"port":"8080","path":["register"]}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"user_id\", jsonData.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorize User",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/authorize?response_type=code&client_id=client123&redirect_uri=http://localhost:8080/callback&scope=openid&user_id={{user_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["authorize"],
+          "query": [
+            {"key": "response_type","value":"code"},
+            {"key": "client_id","value":"client123"},
+            {"key": "redirect_uri","value":"http://localhost:8080/callback"},
+            {"key": "scope","value":"openid"},
+            {"key": "user_id","value":"{{user_id}}"}
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var locationHeader = pm.response.headers.get(\"Location\");",
+              "if(locationHeader){",
+              "    var url = new URL(locationHeader);",
+              "    var code = url.searchParams.get(\"code\");",
+              "    pm.environment.set(\"auth_code\", code);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Access Token",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type","value":"application/x-www-form-urlencoded"}],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key":"grant_type","value":"authorization_code"},
+            {"key":"code","value":"{{auth_code}}"},
+            {"key":"client_id","value":"client123"},
+            {"key":"client_secret","value":"secret123"},
+            {"key":"redirect_uri","value":"http://localhost:8080/callback"}
+          ]
+        },
+        "url": {"raw":"http://localhost:8080/token","protocol":"http","host":["localhost"],"port":"8080","path":["token"]}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"access_token\", jsonData.access_token);",
+              "    pm.environment.set(\"refresh_token\", jsonData.refresh_token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Introspect Token",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/x-www-form-urlencoded"}],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key":"token","value":"{{access_token}}"},
+            {"key":"client_id","value":"client123"},
+            {"key":"client_secret","value":"secret123"}
+          ]
+        },
+        "url": {"raw":"http://localhost:8080/introspect","protocol":"http","host":["localhost"],"port":"8080","path":["introspect"]}
+      }
+    },
+    {
+      "name": "Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/x-www-form-urlencoded"}],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key":"grant_type","value":"refresh_token"},
+            {"key":"refresh_token","value":"{{refresh_token}}"},
+            {"key":"client_id","value":"client123"},
+            {"key":"client_secret","value":"secret123"}
+          ]
+        },
+        "url": {"raw":"http://localhost:8080/token","protocol":"http","host":["localhost"],"port":"8080","path":["token"]}
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var jsonData = pm.response.json();",
+              "    pm.environment.set(\"access_token\", jsonData.access_token);",
+              "    pm.environment.set(\"refresh_token\", jsonData.refresh_token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "user_id","value": ""},
+    {"key": "auth_code","value": ""},
+    {"key": "access_token","value": ""},
+    {"key": "refresh_token","value": ""}
+  ]
+}

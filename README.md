@@ -17,14 +17,19 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 
 ## :sparkles: What's New
 
-### Version 1.0.0 (Latest)
-You can read the full list of changes [here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-1.0.0).
+### Version 2.0.0 (Latest)
+You can read the full list of changes [here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0).
 
 #### :rocket: New Features
-* PostGRES database
-* Schema migration support
-* Helm, kubernetes and docker based auth-service backend
-* Ingress controller for development setup
+* Endpoints implemented:
+```
+Endpoint           | Method | Purpose
+/register          | POST   | Create new users in Postgres
+/authorize         | GET    | Initiate OAuth2 authorization code flow
+/token             | POST   | Exchange authorization code for access token & refresh token; supports refresh token flow
+/introspect        | POST   | Validate access token and return metadata (user, scopes, expiry)
+/revoke (optional) | POST   | Revoke access or refresh tokens
+```
 
 #### :bug: Bug Fixes
 * Nothing here
@@ -37,6 +42,7 @@ You can read the full list of changes [here](https://github.com/arnavmaiti/oauth
 * Run PostGRES sample container `docker run -d --name pg --network mynet -e POSTGRES_PASSWORD=changeme123 postgres:15`
 * Build latest docker `docker build -t oauth-microservice:latest .`
 * Run the container `docker run --network mynet -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme123 -e POSTGRES_HOST=pg -e POSTGRES_PORT=5432 -e POSTGRES_DB=postgres -p 8080:8080 oauth-microservice:latest`
+* Please note, in order to get the latest local pod in helm, use `kubectl delete pod <oauth-microservice-pod>`
 * You should see 
 ```
 OAuth server running on :8080
@@ -67,5 +73,26 @@ helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx
 https://auth.local/health
 https://auth.local/ready
 ```
+
+### (Temporary till client register is implemented) How to create a client in PostGRES
+* Get the PostGRES pod by `kubectl get pods`
+* Execute bash command `kubectl exec -it <postgres-0> -- bash`
+* Run psql command line `psql -U authuser -d authdb`
+* Run the following SQL command to create a temporary client
+```
+INSERT INTO oauth_clients (id, client_id, client_secret, redirect_uris, scopes, created_at, updated_at)
+VALUES (
+    gen_random_uuid(),
+    'client123',
+    'secret123',
+    ARRAY['http://localhost:8080/callback'],
+    ARRAY['openid'],
+    NOW(),
+    NOW()
+);
+```
+
+### How to create and test flow
+[Read it here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0#book-how-to-create-user-and-test-flow)
 
 
