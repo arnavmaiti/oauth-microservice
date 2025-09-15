@@ -21,10 +21,18 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 You can read the full list of changes [here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0).
 
 #### :rocket: New Features
-* 
+* Endpoints implemented:
+```
+Endpoint           | Method | Purpose
+/register          | POST   | Create new users in Postgres
+/authorize         | GET    | Initiate OAuth2 authorization code flow
+/token             | POST   | Exchange authorization code for access token & refresh token; supports refresh token flow
+/introspect        | POST   | Validate access token and return metadata (user, scopes, expiry)
+/revoke (optional) | POST   | Revoke access or refresh tokens
+```
 
 #### :bug: Bug Fixes
-* 
+* Nothing here
 
 ## :wrench: Getting Started
 
@@ -83,5 +91,8 @@ VALUES (
     NOW()
 );
 ```
+
+### How to create and test flow
+[Read it here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-2.0.0#book-how-to-create-user-and-test-flow)
 
 
