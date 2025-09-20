@@ -24,13 +24,7 @@ spec:
             - |
               echo "Running migrations..."
               migrate -path=/migration-scripts \
-                -database postgres://{{ .Values.postgres.username }}:$(POSTGRES_PASSWORD)@{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}?sslmode=disable up
-          env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.postgres.passwordSecret }}
-                  key: {{ .Values.postgres.passwordKey }}
+                -database postgres://{{ .Values.postgres.username }}:{{ .Values.postgres.password }}@{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}?sslmode=disable up
           volumeMounts:
             - name: migration-scripts
               mountPath: /migration-scripts

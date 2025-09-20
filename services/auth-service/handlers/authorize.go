@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arnavmaiti/oauth-microservice/internal/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -24,7 +24,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Validate client exists
 	var exists bool
-	err := db.GetDB().QueryRow("SELECT EXISTS(SELECT 1 FROM oauth_clients WHERE client_id=$1)", clientID).Scan(&exists)
+	err := db.Get().QueryRow("SELECT EXISTS(SELECT 1 FROM oauth_clients WHERE client_id=$1)", clientID).Scan(&exists)
 	if err != nil || !exists {
 		http.Error(w, "Invalid client_id", http.StatusBadRequest)
 		return
@@ -35,7 +35,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	expiresAt := time.Now().Add(5 * time.Minute) // short-lived code
 	scopes := pq.StringArray{scope}
 
-	_, err = db.GetDB().Exec(`
+	_, err = db.Get().Exec(`
         INSERT INTO oauth_authorization_codes 
         (id, code, user_id, client_id, redirect_uri, scopes, expires_at, created_at)
         VALUES ($1,$2,$3,(SELECT id FROM oauth_clients WHERE client_id=$4),$5,$6,$7,$8)

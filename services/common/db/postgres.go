@@ -18,7 +18,7 @@ var (
 )
 
 // GetDB returns a singleton *sql.DB instance
-func GetDB() *sql.DB {
+func Get() *sql.DB {
 	once.Do(func() {
 		dbUser := os.Getenv("POSTGRES_USER")
 		dbPassword := os.Getenv("POSTGRES_PASSWORD")
@@ -61,7 +61,7 @@ func GetDB() *sql.DB {
 }
 
 // CloseDB closes the database connection
-func CloseDB() error {
+func Close() error {
 	if db != nil {
 		return db.Close()
 	}

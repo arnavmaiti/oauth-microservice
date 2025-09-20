@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arnavmaiti/oauth-microservice/internal/db"
-	"github.com/arnavmaiti/oauth-microservice/internal/models"
+	"github.com/arnavmaiti/oauth-microservice/services/auth-service/models"
+	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -58,7 +58,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert into Postgres using prepared statement
-	dbConn := db.GetDB()
+	dbConn := db.Get()
 	query := `
         INSERT INTO users (id, username, password_hash, email, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/arnavmaiti/oauth-microservice/internal/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 )
 
 type HealthResponse struct {
@@ -24,8 +24,6 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 func ReadyCheck(w http.ResponseWriter, r *http.Request) {
 
-	dbConn := db.GetDB()
-
 	var exists bool
 	query := `
 		SELECT EXISTS (
@@ -35,7 +33,7 @@ func ReadyCheck(w http.ResponseWriter, r *http.Request) {
 		);
 	`
 
-	if err := dbConn.QueryRow(query).Scan(&exists); err != nil {
+	if err := db.Get().QueryRow(query).Scan(&exists); err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		fmt.Fprintf(w, "Error checking schema: %v\n", err)
 		return

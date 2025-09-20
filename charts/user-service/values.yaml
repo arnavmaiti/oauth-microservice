@@ -1,17 +1,15 @@
 replicaCount: 1
 
 image:
-  repository: oauth-microservice-auth-service
+  repository: oauth-microservice-user-service
   tag: latest
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 8081
 
 postgres:
-  image: postgres:15
-  storageSize: 5Gi
   username: authuser
   password: changeme123
   db: authdb

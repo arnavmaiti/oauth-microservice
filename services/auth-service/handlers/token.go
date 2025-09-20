@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arnavmaiti/oauth-microservice/internal/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -39,7 +39,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Validate client
 		var dbClientID string
-		err := db.GetDB().QueryRow("SELECT client_id FROM oauth_clients WHERE client_id=$1 AND client_secret=$2", clientID, clientSecret).Scan(&dbClientID)
+		err := db.Get().QueryRow("SELECT client_id FROM oauth_clients WHERE client_id=$1 AND client_secret=$2", clientID, clientSecret).Scan(&dbClientID)
 		if err != nil {
 			http.Error(w, "Invalid client credentials", http.StatusUnauthorized)
 			return
@@ -48,7 +48,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 		// Validate auth code
 		var userID string
 		var expiresAt time.Time
-		err = db.GetDB().QueryRow(`
+		err = db.Get().QueryRow(`
 			SELECT user_id, expires_at FROM oauth_authorization_codes 
 			WHERE code=$1 AND redirect_uri=$2
 		`, code, redirectURI).Scan(&userID, &expiresAt)
@@ -62,7 +62,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 		refreshToken := uuid.New().String()
 		tokenExpiry := time.Now().Add(1 * time.Hour)
 
-		_, err = db.GetDB().Exec(`
+		_, err = db.Get().Exec(`
 			INSERT INTO oauth_tokens (id, user_id, client_id, access_token, refresh_token, scopes, expires_at, created_at)
 			VALUES ($1, $2, (SELECT id FROM oauth_clients WHERE client_id=$3), $4, $5, $6, $7, $8)
 		`, uuid.New(), userID, clientID, accessToken, refreshToken, pq.StringArray{}, tokenExpiry, time.Now())
@@ -92,7 +92,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 		// Validate refresh token
 		var userID string
 		var clientDBID string
-		err := db.GetDB().QueryRow(`
+		err := db.Get().QueryRow(`
 			SELECT user_id, client_id FROM oauth_tokens WHERE refresh_token=$1
 		`, refreshToken).Scan(&userID, &clientDBID)
 		if err != nil {
@@ -105,7 +105,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 		newRefreshToken := uuid.New().String()
 		tokenExpiry := time.Now().Add(1 * time.Hour)
 
-		_, err = db.GetDB().Exec(`
+		_, err = db.Get().Exec(`
 			INSERT INTO oauth_tokens (id, user_id, client_id, access_token, refresh_token, scopes, expires_at, created_at)
 			VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
 		`, uuid.New(), userID, clientDBID, newAccessToken, newRefreshToken, pq.StringArray{}, tokenExpiry, time.Now())

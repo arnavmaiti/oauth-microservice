@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arnavmaiti/oauth-microservice/internal/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 )
 
 func IntrospectHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func IntrospectHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Validate client
 	var dbClientID string
-	err := db.GetDB().QueryRow(`
+	err := db.Get().QueryRow(`
         SELECT client_id FROM oauth_clients WHERE client_id=$1 AND client_secret=$2
     `, clientID, clientSecret).Scan(&dbClientID)
 	if err != nil {
@@ -36,7 +36,7 @@ func IntrospectHandler(w http.ResponseWriter, r *http.Request) {
 	// Validate token
 	var userID string
 	var expiresAt time.Time
-	err = db.GetDB().QueryRow(`
+	err = db.Get().QueryRow(`
         SELECT user_id, expires_at FROM oauth_tokens WHERE access_token=$1
     `, token).Scan(&userID, &expiresAt)
 	if err != nil || time.Now().After(expiresAt) {
