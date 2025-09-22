@@ -1,10 +1,12 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
+	"github.com/arnavmaiti/oauth-microservice/services/auth-service/models"
+	"github.com/arnavmaiti/oauth-microservice/services/common/constants"
 	"github.com/arnavmaiti/oauth-microservice/services/common/db"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -12,40 +14,66 @@ import (
 
 func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
+
+	responseType := query.Get("response_type")
 	clientID := query.Get("client_id")
 	redirectURI := query.Get("redirect_uri")
-	scope := query.Get("scope")
-	userID := query.Get("user_id") // For testing only, in prod use session
+	scopes := query.Get("scopes")
+	state := query.Get("state")
 
-	if clientID == "" || redirectURI == "" || userID == "" {
-		http.Error(w, "Missing required parameters", http.StatusBadRequest)
+	userID := query.Get("user_id") // TODO: Fix this once user ID can be fetched with session
+
+	if responseType != "code" {
+		http.Error(w, "unsupported_response_type", http.StatusBadRequest)
 		return
 	}
 
-	// Validate client exists
-	var exists bool
-	err := db.Get().QueryRow("SELECT EXISTS(SELECT 1 FROM oauth_clients WHERE client_id=$1)", clientID).Scan(&exists)
-	if err != nil || !exists {
-		http.Error(w, "Invalid client_id", http.StatusBadRequest)
+	if clientID == "" || redirectURI == "" {
+		http.Error(w, "invalid_request", http.StatusBadRequest)
+		return
+	}
+
+	// Get the client
+	var client models.OAuthClient
+	err := db.Get().QueryRow(constants.CheckClient, clientID).Scan(&client.ClientID, &client.ClientSecret, pq.Array(&client.RedirectURIs), &client.Scopes, pq.Array(&client.GrantTypes))
+	if err != nil {
+		http.Error(w, "unauthorized_client", http.StatusUnauthorized)
+		return
+	}
+	// Check redirect URI
+	validRedirect := false
+	for _, uri := range client.RedirectURIs {
+		if uri == redirectURI {
+			validRedirect = true
+			break
+		}
+	}
+	if !validRedirect {
+		http.Error(w, "invalid_request", http.StatusBadRequest)
 		return
 	}
 
 	// Generate authorization code
 	code := uuid.New().String()
 	expiresAt := time.Now().Add(5 * time.Minute) // short-lived code
-	scopes := pq.StringArray{scope}
 
-	_, err = db.Get().Exec(`
-        INSERT INTO oauth_authorization_codes 
-        (id, code, user_id, client_id, redirect_uri, scopes, expires_at, created_at)
-        VALUES ($1,$2,$3,(SELECT id FROM oauth_clients WHERE client_id=$4),$5,$6,$7,$8)
-    `, uuid.New(), code, userID, clientID, redirectURI, scopes, expiresAt, time.Now())
+	_, err = db.Get().Exec(constants.AddAuthCode, code, userID, clientID, redirectURI, scopes, expiresAt)
 	if err != nil {
-		http.Error(w, "Failed to create authorization code", http.StatusInternalServerError)
+		http.Error(w, "server_error", http.StatusInternalServerError)
 		return
 	}
 
-	// Redirect back to client with code
-	redirect := fmt.Sprintf("%s?code=%s", redirectURI, code)
-	http.Redirect(w, r, redirect, http.StatusFound)
+	// Redirect back to client with code and state
+	redirect, err := url.Parse(redirectURI)
+	if err != nil {
+		http.Error(w, "invalid_request", http.StatusBadRequest)
+		return
+	}
+	values := redirect.Query()
+	values.Set("code", code)
+	if state != "" {
+		values.Set("state", state)
+	}
+	redirect.RawQuery = values.Encode()
+	http.Redirect(w, r, redirect.String(), http.StatusFound)
 }

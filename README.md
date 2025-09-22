@@ -40,6 +40,7 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
   * PostGRES service is available on post 5432
 * Subsequent builds and start can be done by `docker-compose up --build`.
 * In order to rebuild latest pod delete an existing pod by using `kubectl delete pod <pod-name>`
+* In order to rebuild from scratch delete the complete namespace `kubectl delete namespace default`
 
 ### Helm Chart
 
@@ -62,7 +63,7 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 
 #### User Service
 * For first install: `helm install user-service charts/user-service`
-* To start the server at http://localhost:8080: `kubectl port-forward svc/user-service 8081:8081`
+* To start the server at http://localhost:8081: `kubectl port-forward svc/user-service 8081:8081`
   * View users API at `GET http://localhost:8081/users`
 * For further updates: `helm upgrade --install user-service ./charts/user-service`
 

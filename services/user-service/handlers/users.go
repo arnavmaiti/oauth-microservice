@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/arnavmaiti/oauth-microservice/services/auth-service/models"
 	"github.com/arnavmaiti/oauth-microservice/services/common/constants"
 	db "github.com/arnavmaiti/oauth-microservice/services/common/db"
+	"github.com/arnavmaiti/oauth-microservice/services/user-service/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

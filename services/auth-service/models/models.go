@@ -18,11 +18,11 @@ type User struct {
 
 // OAuthClient represents an OAuth2 client application
 type OAuthClient struct {
-	ID           uuid.UUID `db:"id"`
 	ClientID     string    `db:"client_id"`
 	ClientSecret string    `db:"client_secret"`
 	RedirectURIs []string  `db:"redirect_uris"`
-	Scopes       []string  `db:"scopes"`
+	Scopes       string    `db:"scopes"`
+	GrantTypes   []string  `db:"grant_types"`
 	CreatedAt    time.Time `db:"created_at"`
 	UpdatedAt    time.Time `db:"updated_at"`
 }

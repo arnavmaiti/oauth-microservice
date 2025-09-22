@@ -11,10 +11,11 @@ CREATE TABLE IF NOT EXISTS users (
 -- OAuth2 Clients
 CREATE TABLE IF NOT EXISTS oauth_clients (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    client_id       VARCHAR(100) UNIQUE NOT NULL,
-    client_secret   VARCHAR(255) NOT NULL,
+    client_id       TEXT UNIQUE NOT NULL,
+    client_secret   TEXT NOT NULL,
     redirect_uris   TEXT[] NOT NULL,
-    scopes          TEXT[] DEFAULT '{}',
+    scopes          TEXT,
+    grant_types     TEXT[],
     created_at      TIMESTAMP DEFAULT NOW(),
     updated_at      TIMESTAMP DEFAULT NOW()
 );
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS oauth_tokens (
     client_id       UUID REFERENCES oauth_clients(id) ON DELETE CASCADE,
     access_token    TEXT UNIQUE NOT NULL,
     refresh_token   TEXT UNIQUE,
-    scopes          TEXT[] DEFAULT '{}',
+    scopes          TEXT,
     expires_at      TIMESTAMP NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW()
 );
@@ -36,9 +37,9 @@ CREATE TABLE IF NOT EXISTS oauth_authorization_codes (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code            TEXT UNIQUE NOT NULL,
     user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
-    client_id       UUID REFERENCES oauth_clients(id) ON DELETE CASCADE,
+    client_id       TEXT NOT NULL,
     redirect_uri    TEXT NOT NULL,
-    scopes          TEXT[] DEFAULT '{}',
+    scopes          TEXT,
     expires_at      TIMESTAMP NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW()
 );
