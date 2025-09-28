@@ -58,6 +58,7 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	case "authorization_code":
 		helpers.HandleAuthorizationCodeGrant(w, r, clientDBID, clientGrantTypes, clientScopes, issuer, jwtSigningKey)
 	case "refresh_token":
+		helpers.HandleRefreshTokenGrant(w, r, clientDBID, clientScopes, issuer, jwtSigningKey)
 	case "client_credentials":
 	case "password":
 	default:

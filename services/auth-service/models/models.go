@@ -35,7 +35,7 @@ type OAuthToken struct {
 	ClientID     uuid.UUID `db:"client_id"`
 	AccessToken  string    `db:"access_token"`
 	RefreshToken string    `db:"refresh_token"`
-	Scopes       []string  `db:"scopes"`
+	Scopes       string    `db:"scopes"`
 	ExpiresAt    time.Time `db:"expires_at"`
 	CreatedAt    time.Time `db:"created_at"`
 }

@@ -42,10 +42,14 @@ const (
 	INVALID_CLIENT_SECRET                  ErrorMessage = "invalid client secret"
 	INVALID_FORM_DATA                      ErrorMessage = "invalid form data"
 	INVALID_REDIRECT_URI                   ErrorMessage = "invalid redirect URI"
-	REDIRECT_URI_NO_MATCH                  ErrorMessage = "redirect URI does not match"
-	RESPONSE_TYPE_NOT_SUPPORTED            ErrorMessage = "response type not supported"
 	MESSAGE_ONLY_POST_METHOD_ALLOWED       ErrorMessage = "request method must be POST"
 	MESSAGE_ONLY_JSON_TYPE_CONTENT_ALLOWED ErrorMessage = "content-Type must be application/x-www-form-urlencoded"
+	REDIRECT_URI_NO_MATCH                  ErrorMessage = "redirect URI does not match"
+	REFRESH_TOKEN_EXPIRED                  ErrorMessage = "refresh token expired"
+	REFRESH_TOKEN_INVALID                  ErrorMessage = "refresh token invalid"
+	REFRESH_TOKEN_NOT_ISSUED_BY_CLIENT     ErrorMessage = "refresh token was not issued to this client"
+	REFRESH_TOKEN_REQUIRED                 ErrorMessage = "refresh_token required"
+	RESPONSE_TYPE_NOT_SUPPORTED            ErrorMessage = "response type not supported"
 )
 
 // OAuthError writes a RFC-compliant error response

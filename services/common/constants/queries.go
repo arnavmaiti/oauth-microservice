@@ -14,4 +14,6 @@ const (
 	GetAuthCode    string = `SELECT user_id, client_id, scopes, expires_at, redirect_uri FROM oauth_authorization_codes WHERE code = $1`
 	DeleteAuthCode string = `DELETE FROM oauth_authorization_codes WHERE code=$1`
 	AddToken       string = `INSERT INTO oauth_tokens (id, user_id, client_id, access_token, refresh_token, scopes, expires_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
+	GetToken       string = `SELECT user_id, client_id, scopes, expires_at FROM oauth_tokens WHERE refresh_token=$1`
+	DeleteToken    string = `DELETE FROM oauth_tokens WHERE refresh_token=$1`
 )

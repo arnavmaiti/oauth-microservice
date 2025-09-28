@@ -104,7 +104,7 @@ func HandleAuthorizationCodeGrant(w http.ResponseWriter, r *http.Request, client
 
 	// Use scopes from code if present, otherwise client's default
 	scopeVal := ""
-	if authCode.Scopes == "" {
+	if authCode.Scopes != "" {
 		scopeVal = authCode.Scopes
 	} else {
 		scopeVal = clientScopes
@@ -117,5 +117,48 @@ func HandleAuthorizationCodeGrant(w http.ResponseWriter, r *http.Request, client
 	}
 
 	w.Header().Set(constants.ContentType, constants.ContentJSON)
+	json.NewEncoder(w).Encode(resp)
+}
+
+// refresh_token grant
+func HandleRefreshTokenGrant(w http.ResponseWriter, r *http.Request, clientUUID string, clientScopes string, issuer string, jwtSigningKey []byte) {
+	refreshToken := r.FormValue("refresh_token")
+	if refreshToken == "" {
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_REQUEST, errors.REFRESH_TOKEN_REQUIRED)
+		return
+	}
+	// Validate refresh token and find associated user & client
+	var token models.OAuthToken
+	err := db.Get().QueryRow(constants.GetToken, refreshToken).Scan(&token.UserID, &token.ClientID, &token.Scopes, &token.ExpiresAt)
+	if err != nil {
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_GRANT, errors.REFRESH_TOKEN_INVALID)
+		return
+	}
+	// Check expiration of access token or refresh token policy
+	if time.Now().After(token.ExpiresAt.Add(24 * time.Hour)) {
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_GRANT, errors.REFRESH_TOKEN_EXPIRED)
+		return
+	}
+	// Ensure token belongs to client
+	if token.ClientID.String() != clientUUID {
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_GRANT, errors.REFRESH_TOKEN_NOT_ISSUED_BY_CLIENT)
+		return
+	}
+	// Rotate refresh token: delete old token row and create new
+	_, _ = db.Get().Exec(constants.DeleteToken, refreshToken)
+	// Use scopes from token if present, otherwise client's default
+	scopeVal := ""
+	if token.Scopes != "" {
+		scopeVal = token.Scopes
+	} else {
+		scopeVal = clientScopes
+	}
+
+	resp, err := generateAndPersistTokens(token.UserID.String(), clientUUID, scopeVal, time.Hour, issuer, jwtSigningKey)
+	if err != nil {
+		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.FAILED_TO_GENERATE_TOKENS)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
