@@ -6,6 +6,7 @@ import (
 
 	"github.com/arnavmaiti/oauth-microservice/services/common/constants"
 	db "github.com/arnavmaiti/oauth-microservice/services/common/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/errors"
 	"github.com/arnavmaiti/oauth-microservice/services/user-service/models"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -67,7 +68,7 @@ func HandleUserByID(w http.ResponseWriter, r *http.Request) {
 		err := db.Get().QueryRow(constants.GetUser, id).
 			Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
 		if err != nil {
-			http.Error(w, constants.UserNotFound, http.StatusNotFound)
+			http.Error(w, errors.UserNotFound, http.StatusNotFound)
 			return
 		}
 		json.NewEncoder(w).Encode(u)

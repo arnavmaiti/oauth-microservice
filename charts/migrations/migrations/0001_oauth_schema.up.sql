@@ -1,7 +1,7 @@
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username        VARCHAR(100) UNIQUE NOT NULL,
+    username        VARCHAR(255) UNIQUE NOT NULL,
     password_hash   VARCHAR(255) NOT NULL,
     email           VARCHAR(255) UNIQUE NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW(),
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS oauth_authorization_codes (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     code            TEXT UNIQUE NOT NULL,
     user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
-    client_id       TEXT NOT NULL,
+    client_id       UUID REFERENCES oauth_clients(id) ON DELETE CASCADE,
     redirect_uri    TEXT NOT NULL,
     scopes          TEXT,
     expires_at      TIMESTAMP NOT NULL,

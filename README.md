@@ -41,6 +41,7 @@ Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed t
 * Subsequent builds and start can be done by `docker-compose up --build`.
 * In order to rebuild latest pod delete an existing pod by using `kubectl delete pod <pod-name>`
 * In order to rebuild from scratch delete the complete namespace `kubectl delete namespace default`
+* Access PostGRES container by `docker exec -it postgres psql -U authuser -d authdb`
 
 ### Helm Chart
 

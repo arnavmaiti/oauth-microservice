@@ -18,6 +18,7 @@ type User struct {
 
 // OAuthClient represents an OAuth2 client application
 type OAuthClient struct {
+	ID           uuid.UUID `db:"id"`
 	ClientID     string    `db:"client_id"`
 	ClientSecret string    `db:"client_secret"`
 	RedirectURIs []string  `db:"redirect_uris"`
@@ -46,7 +47,16 @@ type OAuthAuthorizationCode struct {
 	UserID      uuid.UUID `db:"user_id"`
 	ClientID    uuid.UUID `db:"client_id"`
 	RedirectURI string    `db:"redirect_uri"`
-	Scopes      []string  `db:"scopes"`
+	Scopes      string    `db:"scopes"`
 	ExpiresAt   time.Time `db:"expires_at"`
 	CreatedAt   time.Time `db:"created_at"`
+}
+
+// TokenResponse represents a token response for Token flow
+type TokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	TokenType    string `json:"token_type"`
+	ExpiresIn    int64  `json:"expires_in"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	Scope        string `json:"scope,omitempty"`
 }

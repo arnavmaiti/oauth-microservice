@@ -6,6 +6,7 @@ import (
 
 	"github.com/arnavmaiti/oauth-microservice/services/common/constants"
 	db "github.com/arnavmaiti/oauth-microservice/services/common/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/errors"
 	"github.com/arnavmaiti/oauth-microservice/services/user-service/models"
 )
 
@@ -17,7 +18,7 @@ func HandleInternalUserByID(w http.ResponseWriter, r *http.Request) {
 		err := db.Get().QueryRow(constants.GetInternalUser, username).
 			Scan(&u.ID, &u.Username, &u.PasswordHash)
 		if err != nil {
-			http.Error(w, constants.UserNotFound, http.StatusNotFound)
+			http.Error(w, errors.UserNotFound, http.StatusNotFound)
 			return
 		}
 		json.NewEncoder(w).Encode(u)

@@ -35,7 +35,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get the client
 	var client models.OAuthClient
-	err := db.Get().QueryRow(constants.CheckClient, clientID).Scan(&client.ClientID, &client.ClientSecret, pq.Array(&client.RedirectURIs), &client.Scopes, pq.Array(&client.GrantTypes))
+	err := db.Get().QueryRow(constants.CheckClient, clientID).Scan(&client.ID, &client.ClientID, &client.ClientSecret, pq.Array(&client.RedirectURIs), &client.Scopes, pq.Array(&client.GrantTypes))
 	if err != nil {
 		http.Error(w, "unauthorized_client", http.StatusUnauthorized)
 		return
@@ -57,7 +57,7 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	code := uuid.New().String()
 	expiresAt := time.Now().Add(5 * time.Minute) // short-lived code
 
-	_, err = db.Get().Exec(constants.AddAuthCode, code, userID, clientID, redirectURI, scopes, expiresAt)
+	_, err = db.Get().Exec(constants.AddAuthCode, code, userID, client.ID, redirectURI, scopes, expiresAt)
 	if err != nil {
 		http.Error(w, "server_error", http.StatusInternalServerError)
 		return
