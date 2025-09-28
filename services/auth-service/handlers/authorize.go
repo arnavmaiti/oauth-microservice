@@ -3,11 +3,13 @@ package handlers
 import (
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/arnavmaiti/oauth-microservice/services/auth-service/models"
 	"github.com/arnavmaiti/oauth-microservice/services/common/constants"
 	"github.com/arnavmaiti/oauth-microservice/services/common/db"
+	"github.com/arnavmaiti/oauth-microservice/services/common/errors"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
@@ -20,53 +22,42 @@ func AuthorizeHandler(w http.ResponseWriter, r *http.Request) {
 	redirectURI := query.Get("redirect_uri")
 	scopes := query.Get("scopes")
 	state := query.Get("state")
-
 	userID := query.Get("user_id") // TODO: Fix this once user ID can be fetched with session
 
 	if responseType != "code" {
-		http.Error(w, "unsupported_response_type", http.StatusBadRequest)
+		errors.OAuthError(w, http.StatusBadRequest, errors.UNSUPPORTED_RESPONSE_TYPE, errors.RESPONSE_TYPE_NOT_SUPPORTED)
 		return
 	}
-
 	if clientID == "" || redirectURI == "" {
-		http.Error(w, "invalid_request", http.StatusBadRequest)
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_REQUEST, errors.CLIENT_ID_REDIRECT_URI_REQUIRED)
 		return
 	}
-
 	// Get the client
 	var client models.OAuthClient
 	err := db.Get().QueryRow(constants.CheckClient, clientID).Scan(&client.ID, &client.ClientID, &client.ClientSecret, pq.Array(&client.RedirectURIs), &client.Scopes, pq.Array(&client.GrantTypes))
 	if err != nil {
-		http.Error(w, "unauthorized_client", http.StatusUnauthorized)
+		errors.OAuthError(w, http.StatusUnauthorized, errors.UNAUTHORIZED_CLIENT, errors.CLIENT_AUTHENTICATION_FAILED)
 		return
 	}
 	// Check redirect URI
-	validRedirect := false
-	for _, uri := range client.RedirectURIs {
-		if uri == redirectURI {
-			validRedirect = true
-			break
-		}
-	}
+	validRedirect := slices.Contains(client.RedirectURIs, redirectURI)
 	if !validRedirect {
-		http.Error(w, "invalid_request", http.StatusBadRequest)
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_REQUEST, errors.REDIRECT_URI_NO_MATCH)
 		return
 	}
-
 	// Generate authorization code
 	code := uuid.New().String()
 	expiresAt := time.Now().Add(5 * time.Minute) // short-lived code
 
 	_, err = db.Get().Exec(constants.AddAuthCode, code, userID, client.ID, redirectURI, scopes, expiresAt)
 	if err != nil {
-		http.Error(w, "server_error", http.StatusInternalServerError)
+		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.AUTHORIZATION_CODE_CREATION_FAILED)
 		return
 	}
-
 	// Redirect back to client with code and state
 	redirect, err := url.Parse(redirectURI)
 	if err != nil {
-		http.Error(w, "invalid_request", http.StatusBadRequest)
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_REQUEST, errors.INVALID_REDIRECT_URI)
 		return
 	}
 	values := redirect.Query()

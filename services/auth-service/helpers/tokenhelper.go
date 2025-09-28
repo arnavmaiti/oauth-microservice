@@ -3,7 +3,6 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -22,19 +21,15 @@ func ValidateClient(clientID, clientSecret string) (clientUUID string, grantType
 
 	row := db.Get().QueryRow(constants.CheckClient, clientID)
 	if err := row.Scan(&client.ID, &client.ClientID, &client.ClientSecret, pq.Array(&client.RedirectURIs), &client.Scopes, pq.Array(&client.GrantTypes)); err != nil {
-		return "", nil, "", fmt.Errorf(string(errors.CLIENT_NOT_FOUND))
+		return "", nil, "", fmt.Errorf("%s", string(errors.CLIENT_NOT_FOUND))
 	}
 
 	// Client secret check
 	if clientSecret != client.ClientSecret {
-		return "", nil, "", fmt.Errorf(string(errors.INVALID_CLIENT_SECRET))
+		return "", nil, "", fmt.Errorf("%s", string(errors.INVALID_CLIENT_SECRET))
 	}
 
-	gt := make([]string, len(client.GrantTypes))
-	for i := range client.GrantTypes {
-		gt[i] = client.GrantTypes[i]
-	}
-	return client.ID.String(), gt, client.Scopes, nil
+	return client.ID.String(), client.GrantTypes, client.Scopes, nil
 }
 
 // generateAndPersistTokens creates JWT access token and refresh token, persists into oauth_tokens table
@@ -87,7 +82,6 @@ func HandleAuthorizationCodeGrant(w http.ResponseWriter, r *http.Request, client
 	var authCode models.OAuthAuthorizationCode
 	err := db.Get().QueryRow(constants.GetAuthCode, code).Scan(&authCode.UserID, &authCode.ClientID, &authCode.Scopes, &authCode.ExpiresAt, &authCode.RedirectURI)
 	if err != nil {
-		log.Print(err.Error())
 		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_GRANT, errors.AUTHORIZATION_CODE_INVALID)
 		return
 	}
