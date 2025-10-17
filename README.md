@@ -18,10 +18,12 @@
 You can read the full list of changes [here](https://github.com/arnavmaiti/oauth-microservice/wiki/Version-3.0.0).
 
 #### :rocket: New Features
-* TODO
+* Split auth and user services to respective modules
+* Inter-pod communication
+* All OAuth APIs now have proper functionalities and request and response structure. The details can be found [here](https://github.com/arnavmaiti/oauth-microservice/wiki/OAuth-Endpoints)
 
 #### :bug: Bug Fixes
-* Nothing here
+* Updated all APIs to conform to [RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749)
 
 ## :bulb: Introduction
 Go-based OAuth 2.0 + OIDC Authorization Server with a React frontend, designed to run as microservices on Kubernetes
