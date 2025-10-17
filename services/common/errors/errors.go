@@ -34,12 +34,15 @@ const (
 	AUTHORIZATION_CODE_NOT_ISSUED          ErrorMessage = "authorization code was not issued to this client"
 	CLIENT_AUTHENTICATION_FAILED           ErrorMessage = "client authentication failed"
 	CLIENT_ID_REDIRECT_URI_REQUIRED        ErrorMessage = "client_id and redirect_uri required"
+	CLIENT_NOT_ALLOWED_TO_USE_CLIENT_CRED  ErrorMessage = "client not allowed to use client_credentials"
+	CLIENT_NOT_ALLOWED_TO_USE_PASSWORD     ErrorMessage = "client not allowed to use password grant"
 	CLIENT_NOT_FOUND                       ErrorMessage = "client not found"
 	CODE_REDIRECT_URI_REQUIRED             ErrorMessage = "code and redirect_uri required"
 	FAILED_TO_GENERATE_TOKENS              ErrorMessage = "failed to generate tokens"
 	GRANT_TYPE_NOT_SUPPORTED               ErrorMessage = "grant type is not supported"
 	GRANT_TYPE_REQUIRED                    ErrorMessage = "grant type is required"
 	INVALID_CLIENT_SECRET                  ErrorMessage = "invalid client secret"
+	INVALID_CREDENTIALS                    ErrorMessage = "invalid credentials"
 	INVALID_FORM_DATA                      ErrorMessage = "invalid form data"
 	INVALID_REDIRECT_URI                   ErrorMessage = "invalid redirect URI"
 	MESSAGE_ONLY_POST_METHOD_ALLOWED       ErrorMessage = "request method must be POST"
@@ -50,6 +53,7 @@ const (
 	REFRESH_TOKEN_NOT_ISSUED_BY_CLIENT     ErrorMessage = "refresh token was not issued to this client"
 	REFRESH_TOKEN_REQUIRED                 ErrorMessage = "refresh_token required"
 	RESPONSE_TYPE_NOT_SUPPORTED            ErrorMessage = "response type not supported"
+	USERNAME_PASSWORD_REQUIRED             ErrorMessage = "username and password required"
 )
 
 // OAuthError writes a RFC-compliant error response

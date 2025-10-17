@@ -60,7 +60,9 @@ func TokenHandler(w http.ResponseWriter, r *http.Request) {
 	case "refresh_token":
 		helpers.HandleRefreshTokenGrant(w, r, clientDBID, clientScopes, issuer, jwtSigningKey)
 	case "client_credentials":
+		helpers.HandleClientCredentialsGrant(w, r, clientDBID, clientGrantTypes, clientScopes, issuer, jwtSigningKey)
 	case "password":
+		helpers.HandlePasswordGrant(w, r, clientDBID, clientGrantTypes, clientScopes, issuer, jwtSigningKey)
 	default:
 		errors.OAuthError(w, http.StatusBadRequest, errors.UNSUPPORTED_GRANT_TYPE, errors.GRANT_TYPE_NOT_SUPPORTED)
 		return

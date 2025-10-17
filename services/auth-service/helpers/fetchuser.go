@@ -9,8 +9,8 @@ import (
 	"github.com/arnavmaiti/oauth-microservice/services/auth-service/models"
 )
 
-func fetchUserFromUserService(username string) (*models.User, error) {
-	url := fmt.Sprintf("http://user-service:8081/users/%s", username) // k8s DNS
+func FetchUserFromUserService(username string) (*models.User, error) {
+	url := fmt.Sprintf("http://user-service:8081/internal/users/%s", username) // k8s DNS
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

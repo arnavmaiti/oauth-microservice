@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // validateClient checks client_id and client_secret and returns internal client UUID, allowed grant_types and scopes
@@ -33,13 +35,20 @@ func ValidateClient(clientID, clientSecret string) (clientUUID string, grantType
 }
 
 // generateAndPersistTokens creates JWT access token and refresh token, persists into oauth_tokens table
-func generateAndPersistTokens(subjectUserID string, clientUUID string, scope string, expiresIn time.Duration, issuer string, jwtSigningKey []byte) (models.TokenResponse, error) {
+func generateAndPersistTokens(subjectUserID *uuid.UUID, clientUUID string, scope string, expiresIn time.Duration, issuer string, jwtSigningKey []byte) (models.TokenResponse, error) {
 	now := time.Now().UTC()
 	exp := now.Add(expiresIn)
 
+	var subjectUserIDValue sql.NullString
+	if subjectUserID == nil {
+		subjectUserIDValue = sql.NullString{Valid: false}
+	} else {
+		subjectUserIDValue = sql.NullString{String: (*subjectUserID).String()}
+	}
+
 	// Create JWT access token
 	claims := jwt.MapClaims{
-		"sub":   subjectUserID,
+		"sub":   subjectUserIDValue.String,
 		"aud":   clientUUID,
 		"scope": scope,
 		"iat":   now.Unix(),
@@ -55,16 +64,18 @@ func generateAndPersistTokens(subjectUserID string, clientUUID string, scope str
 	refreshToken := uuid.NewString()
 	// Persist to DB
 	id := uuid.New()
-	_, err = db.Get().Exec(constants.AddToken, id, subjectUserID, clientUUID, accessToken, refreshToken, scope, exp, now)
+	_, err = db.Get().Exec(constants.AddToken, id, subjectUserIDValue, clientUUID, accessToken, refreshToken, scope, exp, now)
 	if err != nil {
 		return models.TokenResponse{}, err
 	}
 	resp := models.TokenResponse{
-		AccessToken:  accessToken,
-		TokenType:    "bearer",
-		ExpiresIn:    int64(expiresIn.Seconds()),
-		RefreshToken: refreshToken,
-		Scope:        scope,
+		AccessToken: accessToken,
+		TokenType:   "bearer",
+		ExpiresIn:   int64(expiresIn.Seconds()),
+		Scope:       scope,
+	}
+	if subjectUserID != nil {
+		resp.RefreshToken = refreshToken
 	}
 	return resp, nil
 }
@@ -110,7 +121,7 @@ func HandleAuthorizationCodeGrant(w http.ResponseWriter, r *http.Request, client
 		scopeVal = clientScopes
 	}
 	// Generate tokens and persist
-	resp, err := generateAndPersistTokens(authCode.UserID.String(), clientUUID, scopeVal, time.Hour, issuer, jwtSigningKey)
+	resp, err := generateAndPersistTokens(&authCode.UserID, clientUUID, scopeVal, time.Hour, issuer, jwtSigningKey)
 	if err != nil {
 		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.FAILED_TO_GENERATE_TOKENS)
 		return
@@ -154,11 +165,75 @@ func HandleRefreshTokenGrant(w http.ResponseWriter, r *http.Request, clientUUID 
 		scopeVal = clientScopes
 	}
 
-	resp, err := generateAndPersistTokens(token.UserID.String(), clientUUID, scopeVal, time.Hour, issuer, jwtSigningKey)
+	resp, err := generateAndPersistTokens(&token.UserID, clientUUID, scopeVal, time.Hour, issuer, jwtSigningKey)
 	if err != nil {
 		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.FAILED_TO_GENERATE_TOKENS)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(constants.ContentType, constants.ContentJSON)
+	json.NewEncoder(w).Encode(resp)
+}
+
+// client_credentials grant
+func HandleClientCredentialsGrant(w http.ResponseWriter, r *http.Request, clientUUID string, clientGrantTypes []string, clientScopes string, issuer string, jwtSigningKey []byte) {
+	// Check client is authorized for client_credentials
+	allowed := false
+	for _, g := range clientGrantTypes {
+		if g == "client_credentials" {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		errors.OAuthError(w, http.StatusUnauthorized, errors.UNAUTHORIZED_CLIENT, errors.CLIENT_NOT_ALLOWED_TO_USE_CLIENT_CRED)
+		return
+	}
+	// Here subject is the client itself
+	resp, err := generateAndPersistTokens(nil, clientUUID, clientScopes, time.Hour, issuer, jwtSigningKey)
+	if err != nil {
+		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.FAILED_TO_GENERATE_TOKENS)
+		return
+	}
+	w.Header().Set(constants.ContentType, constants.ContentJSON)
+	json.NewEncoder(w).Encode(resp)
+}
+
+// password grant
+func HandlePasswordGrant(w http.ResponseWriter, r *http.Request, clientUUID string, clientGrantTypes []string, clientScopes string, issuer string, jwtSigningKey []byte) {
+	allowed := false
+	for _, g := range clientGrantTypes {
+		if g == "password" {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		errors.OAuthError(w, http.StatusUnauthorized, errors.UNAUTHORIZED_CLIENT, errors.CLIENT_NOT_ALLOWED_TO_USE_PASSWORD)
+		return
+	}
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	if username == "" || password == "" {
+		errors.OAuthError(w, http.StatusBadRequest, errors.INVALID_REQUEST, errors.USERNAME_PASSWORD_REQUIRED)
+		return
+	}
+	// Fetch user from user-service
+	user, err := FetchUserFromUserService(username)
+	if err != nil {
+		errors.OAuthError(w, http.StatusUnauthorized, errors.INVALID_GRANT, errors.INVALID_CREDENTIALS)
+		return
+	}
+	// Verify password hash
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		errors.OAuthError(w, http.StatusUnauthorized, errors.INVALID_GRANT, errors.INVALID_CREDENTIALS)
+		return
+	}
+	resp, err := generateAndPersistTokens(&user.ID, clientUUID, clientScopes, time.Hour, issuer, jwtSigningKey)
+	if err != nil {
+		errors.OAuthError(w, http.StatusInternalServerError, errors.SERVER_ERROR, errors.FAILED_TO_GENERATE_TOKENS)
+		return
+	}
+	w.Header().Set(constants.ContentType, constants.ContentJSON)
 	json.NewEncoder(w).Encode(resp)
 }
