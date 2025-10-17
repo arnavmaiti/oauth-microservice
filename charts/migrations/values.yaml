@@ -1,0 +1,13 @@
+image:
+  repository: postgres
+  tag: 15
+  pullPolicy: IfNotPresent
+
+migrationsPath: /migrations
+
+postgres:
+  username: authuser
+  password: changeme123
+  db: authdb
+  host: postgres
+  port: 5432

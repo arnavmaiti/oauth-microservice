@@ -1,11 +1,5 @@
 apiVersion: v2
-name: oauth-microservice
-description: Helm chart for the IAM service
-type: application
+name: auth-service
+description: Kubernetes Helm chart for Auth Service
 version: 0.1.0
-appVersion: "1.0.0"
-dependencies:
-  - name: migrations
-    version: 0.1.0
-    repository: "file://./charts/migrations"
-    condition: migrations.enabled
+appVersion: "1.0"

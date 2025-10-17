@@ -1,0 +1,71 @@
+name: oauth-microservice
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: changeme123
+      POSTGRES_DB: authdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  migrations:
+    image: postgres:15
+    container_name: migrations
+    depends_on:
+      - postgres
+    volumes:
+      - ./charts/migrations/migrations:/migrations
+    environment:
+      PGPASSWORD: changeme123
+    command: >
+      bash -c "
+      until pg_isready -h postgres -U authuser -d authdb; do
+        echo 'Waiting for Postgres...';
+        sleep 2;
+      done &&
+      for f in /migrations/*.up.sql; do
+        echo Running $$f;
+        psql -h postgres -U authuser -d authdb -f $$f;
+      done
+      "
+    restart: "on-failure"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: auth-service
+    environment:
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: changeme123
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: authdb
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: user-service
+    environment:
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: changeme123
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: authdb
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
